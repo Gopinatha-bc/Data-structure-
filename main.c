@@ -1,23 +1,86 @@
 #include <stdio.h>
 #include <stdlib.h>
-void towerofhanoi(int n,char source,char dest,char temp)
+#include <ctype.h>
+#define SIZE 20
+struct stack
 {
-    if(n>1)
-    {
-        towerofhanoi(n-1,source,temp,dest);
-        printf("\n move%d destination %c to %c",n,source,dest);
-        towerofhanoi(n-1,temp,dest,source);
-    }
-    else
-        printf("\n move %d disc from %c to %c",n,source,dest);
+    int top;
+    char data[SIZE];
+};
+typedef struct stack STACK;
+void push(STACK*s,char item)
+{
+    s->data[++(s->top)]=item;
 }
+char pop(STACK*s)
+{
+    return s->data[(s->top)--];
+}
+int preced(char symbol)
+{
+    switch(symbol)
+    {
+        case '^':return 5;
+        case '*':return 4;
+        case '/':return 3;
+        case '+':return 2;
+        case '-':return 1;
+    }
+}
+void infixtopostfix(STACK*s,char infix[20])
+{
+    int i,j=0;
+    char symbol,postfix[20],temp;
+    for(i=0;infix[i]!='\0';i++)
+    {
+        symbol=infix[i];
+        if(isalnum(symbol))
+            postfix[j++]=symbol;
+        else
+        {
+            switch(symbol)
+            {
+            case '(':
+                push(s,symbol);
+                break;
+            case ')':
+                temp=pop(s);
+                while(temp!='(')
+                {
+                    postfix[j++]=temp;
+                    temp=pop(s);
+                }
+                break;
+            case '+':
+            case '-':
+            case '*':
+            case '/':
+            case '^':
+                if(s->top==-1||s->data[s->top]=='(')
+                    push(s,symbol);
+                else
+                {
+                    while(preced(s->data[s->top])>=preced(symbol)&&s->top!=-1&&s->data[s->top]!='(')
+                            postfix[j++]=pop(s);
 
-
+                    push(s,symbol);
+                }
+                break;
+            }
+        }
+    }
+    while(s->top!=-1)
+        postfix[j++]=pop(s);
+    postfix[j]='\0';
+    printf("\npostfix expression is %s",postfix);
+}
 int main()
 {
-    int n;
-    printf("\n read no of discs");
-    scanf("%d",&n);
-    towerofhanoi(n,'S','D','T');
+    char infix[20];
+    STACK s;
+    s.top=-1;
+    printf("\n read infix expression \n");
+    scanf("%s",infix);
+    infixtopostfix(&s,infix);
     return 0;
 }
