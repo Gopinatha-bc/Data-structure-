@@ -1,84 +1,86 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define SIZE 5
-
-struct queue
+#include <ctype.h>
+#define SIZE 20
+struct stack
 {
-    int front,rear;
-    int data[SIZE];
+    int top;
+    char data[SIZE];
 };
-typedef struct queue QUEUE;
-void enqueue(QUEUE*q,int item)
+typedef struct stack STACK;
+void push(STACK*s,char item)
 {
-    if(q->rear==SIZE-1)
-        printf("\n queue full");
-    else
+    s->data[++(s->top)]=item;
+}
+char pop(STACK*s)
+{
+    return s->data[(s->top)--];
+}
+int preced(char symbol)
+{
+    switch(symbol)
     {
-        q->rear=q->rear+1;
-        q->data[q->rear]=item;
-        if(q->front==-1)
-            q->front=0;
+        case '^':return 5;
+        case '*':return 4;
+        case '/':return 3;
+        case '+':return 2;
+        case '-':return 1;
     }
 }
-void dequeue(QUEUE*q)
+void infixtopostfix(STACK*s,char infix[20])
 {
-    if(q->front==-1)
-        printf("\n queue empty");
-    else
+    int i,j=0;
+    char symbol,postfix[20],temp;
+    for(i=0;infix[i]!='\0';i++)
     {
-        printf("\n element deleted is %d",q->data[q->front]);
-        if(q->front==q->rear)
-        {
-            q->front=-1;
-            q->rear=-1;
-        }
+        symbol=infix[i];
+        if(isalnum(symbol))
+            postfix[j++]=symbol;
         else
-            q->front=q->front+1;
+        {
+            switch(symbol)
+            {
+            case '(':
+                push(s,symbol);
+                break;
+            case ')':
+                temp=pop(s);
+                while(temp!='(')
+                {
+                    postfix[j++]=temp;
+                    temp=pop(s);
+                }
+                break;
+            case '+':
+            case '-':
+            case '*':
+            case '/':
+            case '^':
+                if(s->top==-1||s->data[s->top]=='(')
+                    push(s,symbol);
+                else
+                {
+                    while(preced(s->data[s->top])>=preced(symbol)&&s->top!=-1&&s->data[s->top]!='(')
+                            postfix[j++]=pop(s);
+
+                    push(s,symbol);
+                }
+                break;
+            }
+        }
     }
-}
-void display(QUEUE q)
-{
-    int i;
-    if(q.front==-1)
-        printf("\n queue is full");
-    else
-    {
-        printf("\n the content of the queue are:\n");
-        for(i=q.front;i<=q.rear;i++)
-            printf("%d\t",q.data[i]);
-    }
+    while(s->top!=-1)
+        postfix[j++]=pop(s);
+    postfix[j]='\0';
+    printf("\npostfix expression is %s",postfix);
 }
 int main()
 {
-    QUEUE q;
-    q.front=-1;
-    q.rear=-1;
-    int item,ch;
-    for(;;)
-    {
-        printf("\n 1.insert");
-        printf("\n 2.delete");
-        printf("\n 3.display");
-        printf("\n 4.exit");
-        printf("\n read choice:");
-        scanf("%d",&ch);
-        switch(ch)
-        {
-        case 1:
-            printf("\n read element to be inserted:");
-            scanf("%d",&item);
-            enqueue(&q,item);
-            break;
-        case 2:
-            dequeue(&q);
-            break;
-        case 3:
-            display(q);
-            break;
-        default:
-            exit(0);
-        }
-    }
+    char infix[20];
+    STACK s;
+    s.top=-1;
+    printf("\n read infix expression \n");
+    scanf("%s",infix);
+    infixtopostfix(&s,infix);
     return 0;
 }
-
