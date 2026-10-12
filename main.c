@@ -1,67 +1,84 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include<ctype.h>
-#include<math.h>
-#define SIZE 20
+#define SIZE 5
 
-struct stack
+struct queue
 {
-    int top;
-    float data[SIZE];
+    int front,rear;
+    int data[SIZE];
 };
-typedef struct stack STACK;
-void push(STACK*s,float item)
+typedef struct queue QUEUE;
+void enqueue(QUEUE*q,int item)
 {
-    s->data[++(s->top)]=item;
-
-}
-float pop(STACK*s)
-{
-    return  s->data[(s->top)--];
-}
-float compute(float oper1,char symbol,float oper2)
-{
-    switch(symbol)
+    if(q->rear==SIZE-1)
+        printf("\n queue full");
+    else
     {
-        case '+':return oper1+oper2;
-        case '-':return oper1-oper2;
-        case '*':return oper1*oper2;
-        case '/':return oper1/oper2;
-        case '^':return pow(oper1,oper2);
+        q->rear=q->rear+1;
+        q->data[q->rear]=item;
+        if(q->front==-1)
+            q->front=0;
     }
-
 }
-float eval_postfix(STACK*s,char postfix[20])
+void dequeue(QUEUE*q)
 {
-    char symbol;
-    int i;
-    float oper1,oper2,res;
-    for(i=0;postfix[i]!='\0';i++)
+    if(q->front==-1)
+        printf("\n queue empty");
+    else
     {
-        symbol=postfix[i];
-        if(isdigit(symbol))
-            push(s,symbol-'0');
-        else
+        printf("\n element deleted is %d",q->data[q->front]);
+        if(q->front==q->rear)
         {
-            oper2=pop(s);
-            oper1=pop(s);
-            res=compute(oper1,symbol,oper2);
-
-            push(s,res);
+            q->front=-1;
+            q->rear=-1;
         }
+        else
+            q->front=q->front+1;
     }
-    return pop(s);
 }
-
+void display(QUEUE q)
+{
+    int i;
+    if(q.front==-1)
+        printf("\n queue is full");
+    else
+    {
+        printf("\n the content of the queue are:\n");
+        for(i=q.front;i<=q.rear;i++)
+            printf("%d\t",q.data[i]);
+    }
+}
 int main()
 {
-    char postfix[20];
-    float res;
-    STACK s;
-    s.top=-1;
-    printf("\n read postfix expression\n");
-    scanf("%s",postfix);
-    res=eval_postfix(&s,postfix);
-    printf("\n the final answer is %f",res);
+    QUEUE q;
+    q.front=-1;
+    q.rear=-1;
+    int item,ch;
+    for(;;)
+    {
+        printf("\n 1.insert");
+        printf("\n 2.delete");
+        printf("\n 3.display");
+        printf("\n 4.exit");
+        printf("\n read choice:");
+        scanf("%d",&ch);
+        switch(ch)
+        {
+        case 1:
+            printf("\n read element to be inserted:");
+            scanf("%d",&item);
+            enqueue(&q,item);
+            break;
+        case 2:
+            dequeue(&q);
+            break;
+        case 3:
+            display(q);
+            break;
+        default:
+            exit(0);
+        }
+    }
     return 0;
 }
+
